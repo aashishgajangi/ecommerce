@@ -51,16 +51,17 @@
 - [ ] Verify pre-signed URL generation works
 
 ### Nginx Configuration
-- [ ] Configure `api.yourdomain.com` → PHP-FPM (Laravel — REST API, `/api/v1/*`)
-- [ ] Configure `admin.yourdomain.com` → PHP-FPM (Laravel — Filament panel, `/admin/*`)
-- [ ] Configure `yourdomain.com` → PM2 / Node (Next.js storefront)
-- [ ] Configure `minio.yourdomain.com` → MinIO console (optional/internal)
-- [ ] Note: `api.*` and `admin.*` share same PHP-FPM pool and `backend/public/` root
+- [x] Configure `api.hangoutcakes.com` → PHP-FPM (Laravel — REST API, `/api/v1/*`)
+- [x] Configure `admin.hangoutcakes.com` → PHP-FPM (Laravel — Filament panel, `/admin/*`)
+- [x] Configure `order.hangoutcakes.com` → PM2 / Node (Next.js on port 4000)
+- [ ] Configure `minio.hangoutcakes.com` → MinIO (once installed)
+- [x] Cloudflare real-IP snippet applied to all vhosts
 
 ### SSL
-- [ ] Install Certbot
-- [ ] Issue Let's Encrypt certs for all domains
-- [ ] Verify auto-renewal timer is active
+- [x] Cloudflare proxied — SSL handled by Cloudflare (Flexible mode)
+- [x] Cloudflare Origin Certificate saved to `/etc/ssl/cloudflare/`
+- [ ] Upgrade to Full (Strict) — uncomment SSL blocks in Nginx vhosts when ready
+- [x] `order.hangoutcakes.com` live — returns 200 on port 4000
 
 ---
 
