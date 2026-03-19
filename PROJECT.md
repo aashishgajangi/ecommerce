@@ -58,10 +58,12 @@ Key principle: Every consumer talks to the same `/api/v1/*` endpoints.
 No business logic lives in the frontend. Mobile apps later require zero backend changes.
 
 **Domains:**
-- `yourdomain.com` → PM2 / Next.js (storefront)
-- `api.yourdomain.com` → PHP-FPM / Laravel (REST API — `/api/v1/*`)
-- `admin.yourdomain.com` → PHP-FPM / Laravel (Filament panel — `/admin/*`)
-- `minio.yourdomain.com` → MinIO console (internal/optional)
+- `order.hangoutcakes.com` → PM2 / Next.js (storefront)
+- `api.hangoutcakes.com` → PHP-FPM / Laravel (REST API — `/api/v1/*`)
+- `admin.hangoutcakes.com` → PHP-FPM / Laravel (Filament panel — `/admin/*`)
+- `minio.hangoutcakes.com` → MinIO console (internal/optional)
+
+**SSL:** Cloudflare proxied (orange cloud). Use **Cloudflare Origin Certificate** on Nginx — not Let's Encrypt. Set Cloudflare SSL/TLS mode to **Full (Strict)**.
 
 > `api.` and `admin.` are both served by the **same Laravel app** and same PHP-FPM pool.
 > Nginx has two separate server blocks routing to the same `backend/public/` directory.
@@ -607,12 +609,16 @@ stores/                              → Zustand (cartStore, authStore)
 7.  Install Composer (PHP package manager)
 8.  Install and configure MinIO (data dir, access keys, bucket creation)
 9.  Configure Nginx:
-      api.yourdomain.com   → PHP-FPM (Laravel — REST API only, /api/v1/*)
-      admin.yourdomain.com → PHP-FPM (Laravel — Filament panel only, /admin/*)
-      yourdomain.com       → PM2 / Node (Next.js storefront)
-      minio.yourdomain.com → MinIO console (internal)
+      api.hangoutcakes.com   → PHP-FPM (Laravel — REST API only, /api/v1/*)
+      admin.hangoutcakes.com → PHP-FPM (Laravel — Filament panel only, /admin/*)
+      order.hangoutcakes.com → PM2 / Node (Next.js storefront)
+      minio.hangoutcakes.com → MinIO console (internal)
       Note: api.* and admin.* both point to the same Laravel app / PHP-FPM pool
-10. SSL via Certbot (Let's Encrypt) for all domains
+10. SSL via Cloudflare Origin Certificate (domains are Cloudflare-proxied — Let's Encrypt won't work)
+    → Cloudflare dashboard → SSL/TLS → Origin Server → Create Certificate → *.hangoutcakes.com
+    → Save as /etc/ssl/cloudflare/hangoutcakes.com.pem and .key
+    → Set Cloudflare SSL/TLS mode to Full (Strict)
+    → Uncomment SSL server blocks in Nginx vhosts, then nginx -t && nginx -s reload
 11. Clone repos, install dependencies, run migrations + seeders, build frontend
 12. PM2 config for Next.js process management
 13. PHP-FPM pool config (pm.max_children based on RAM)
@@ -622,7 +628,7 @@ stores/                              → Zustand (cartStore, authStore)
 17. MinIO bucket policies (public-read for product images)
 18. Configure SMTP in `.env` (MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM_ADDRESS)
 19. Configure Google OAuth in `.env` (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI)
-    → Add `api.yourdomain.com/api/v1/auth/google/callback` as an authorized redirect URI in Google Cloud Console
+    → Add `api.hangoutcakes.com/api/v1/auth/google/callback` as an authorized redirect URI in Google Cloud Console
 ```
 
 ### Minimum VPS Specs
