@@ -75,69 +75,72 @@
 - [x] Install Laravel Socialite 5
 - [x] Install Filament 4 and run `filament:install --panels`
 - [x] Run initial migrations (users, cache, jobs, personal_access_tokens)
-- [ ] Configure MinIO as default filesystem (`s3` disk) — MinIO not yet installed
-- [ ] Set up base API route structure (`/api/v1/`)
-- [ ] Create Enums: `UserRole`, `OrderStatus`, `PaymentStatus`, `CouponType`, `RefundStatus`
+- [x] Configure MinIO as default filesystem (`s3` disk)
+- [x] Set up base API route structure (`/api/v1/`) — 49 routes registered
+- [x] Create Enums: `UserRole`, `OrderStatus`, `PaymentStatus`, `CouponType`, `RefundStatus`, `ShipmentStatus`
 
-### Backend — Migrations (all 32 tables)
-- [ ] `users` (with `google_id`, `avatar_url`), `password_reset_tokens`
-- [ ] `user_addresses`
-- [ ] `wholesale_profiles`
-- [ ] `categories` (self-referencing parent_id)
-- [ ] `brands`
-- [ ] `attributes`, `attribute_values`
-- [ ] `products`, `product_categories` (pivot)
-- [ ] `product_attributes`, `product_variants`, `variant_attribute_values`
-- [ ] `product_images`
-- [ ] `inventory`, `inventory_movements`
-- [ ] `carts`, `cart_items`
-- [ ] `orders`, `order_items`, `order_status_history`
-- [ ] `payments` (with currency field)
-- [ ] `refunds` **[NEW]**
-- [ ] `tax_rates` **[NEW]**
-- [ ] `shipping_zones`, `shipping_rates`, `shipments`
-- [ ] `coupons`, `coupon_conditions`, `coupon_usages`
-- [ ] `reviews`, `wishlists`
-- [ ] `pages`, `banners`, `settings`, `notifications`
-- [ ] Run all migrations: `php artisan migrate`
+### Backend — Migrations (all 35 tables)
+- [x] `users` (with `google_id`, `avatar_url`, `phone`, `role`, `is_active`), `password_reset_tokens`
+- [x] `user_addresses`
+- [x] `wholesale_profiles`
+- [x] `categories` (self-referencing parent_id)
+- [x] `brands`
+- [x] `attributes`, `attribute_values`
+- [x] `products`, `product_categories` (pivot)
+- [x] `product_attributes`, `product_variants`, `variant_attribute_values`
+- [x] `product_images`
+- [x] `inventory`, `inventory_movements`
+- [x] `carts`, `cart_items`
+- [x] `orders`, `order_items`, `order_status_history`
+- [x] `payments` (with currency field, default INR)
+- [x] `refunds` **[NEW]**
+- [x] `tax_rates` (with HSN code support) **[NEW]**
+- [x] `shipping_zones`, `shipping_rates`, `shipments`
+- [x] `coupons`, `coupon_conditions`, `coupon_usages`
+- [x] `reviews`, `wishlists`
+- [x] `pages`, `banners`, `settings`, `notifications`
+- [x] Run all 35 migrations: `php artisan migrate` ✅
 
 ### Backend — Auth Module
-- [ ] `AuthController` — register (B2C), register/wholesale, login, logout, forgot-password, reset-password, me
-- [ ] `FormRequest` validation for each auth endpoint
-- [ ] Sanctum token returned on login
-- [ ] Email verification flow (SMTP)
-- [ ] `SocialAuthController` — `GET /auth/google` redirect + `GET /auth/google/callback` handler
-- [ ] Google OAuth upsert logic: find by google_id → find by email (link) → create new user
-- [ ] Add authorized redirect URI in Google Cloud Console: `api.yourdomain.com/api/v1/auth/google/callback`
-- [ ] Verify SMTP config — test email delivery (password reset flow)
+- [x] `AuthController` — register, login, logout, forgot-password, reset-password, me
+- [x] `FormRequest` validation (RegisterRequest, LoginRequest)
+- [x] Sanctum token returned on login/register
+- [ ] Email verification flow (SMTP) — needs SMTP credentials
+- [x] `SocialAuthController` — `GET /auth/google` redirect + `GET /auth/google/callback` handler
+- [x] Google OAuth upsert logic: find by email (link) → create new user
+- [ ] Add authorized redirect URI in Google Cloud Console: `https://api.hangoutcakes.com/api/v1/auth/google/callback`
+- [ ] Verify SMTP config — fill `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` in `.env`
+- [ ] Test email delivery (password reset flow)
 
 ### Backend — Catalog Module
-- [ ] `Category` model + `CategoryController` (tree endpoint, products by category)
-- [ ] `Brand` model + `BrandController`
-- [ ] `Attribute`, `AttributeValue` models
-- [ ] `Product` model with relationships (brand, categories, variants, images, attributes)
-- [ ] `ProductVariant` model with `VariantAttributeValues`
-- [ ] `ProductImage` model
-- [ ] `ProductController` — list (filter/sort/search), show (composite)
-- [ ] Eager loading on all product queries (no N+1)
+- [x] `Category` model + `CategoryController` (tree endpoint with children)
+- [x] `Brand` model + `BrandController`
+- [x] `Attribute`, `AttributeValue` models
+- [x] `Product` model with relationships (brand, categories, variants, images, attributes, taxRate)
+- [x] `ProductVariant` model with `VariantAttributeValues`
+- [x] `ProductImage` model (with MinIO URL accessor)
+- [x] `ProductController` — list (filter/sort/search/featured), show (composite with wholesale price)
+- [x] Eager loading on all product queries (no N+1)
 - [ ] Database indexes: slug (unique), sku (unique), category+active+sort composite, full-text on name+description
 - [ ] `SearchController` — full-text search via Laravel Scout + PostgreSQL
 
 ### Backend — Filament Admin (Catalog)
-- [ ] `CategoryResource` — nested category CRUD
-- [ ] `BrandResource`
+- [x] `CategoryResource` — nested category CRUD, parent selector
+- [x] `BrandResource` — with logo upload
 - [ ] `AttributeResource` + `AttributeValueResource`
-- [ ] `ProductResource` — with variant management, image upload to MinIO
+- [x] `ProductResource` — tabbed form, variant management, image upload to MinIO, SEO
 - [ ] `TaxRateResource` — manage GST slabs, HSN codes **[NEW]**
+- [x] `UserResource` — CRUD with role management, active toggle
+- [x] `OrderResource` — read-only financials, status update
+- [x] `ReviewResource` — moderation (approve/reject)
 
 ### Backend — Composite Endpoints
-- [ ] `GET /storefront/home` — featured, banners, new arrivals, categories, promotions
-- [ ] `GET /storefront/product/{slug}` — product + variants + images + attrs + reviews + related
-  - [ ] Conditional wholesale_price based on user role
+- [x] `GET /api/v1/home` — featured, banners, new arrivals, categories
+- [x] `GET /api/v1/products/{slug}` — product + variants + images + attrs + reviews (conditional wholesale_price)
 - [ ] Redis caching on home (60s TTL) and category tree (5min TTL)
 
 ### Backend — File Upload
-- [ ] `PresignController` — `POST /uploads/presign` returns MinIO pre-signed URL
+- [x] `GET /api/v1/uploads/presign` — returns MinIO pre-signed URL (15-min expiry)
 - [ ] Queued job to generate image variants (thumbnail/medium/large) after upload
 
 ### Backend — Seeders
@@ -177,8 +180,8 @@
 ## Phase 2 — Cart + Orders + Payments
 
 ### Backend — Cart Module
-- [ ] `Cart` + `CartItem` models
-- [ ] `CartController` — get, add item, update quantity, remove item, apply/remove coupon
+- [x] `Cart` + `CartItem` models (with subtotal computed attribute)
+- [x] `CartController` — stub routes registered (get, add, update, remove, coupon apply/remove)
 - [ ] `CartService` — guest cart (session), user cart (DB), merge on login
 - [ ] Cart expiry cleanup job (scheduled)
 - [ ] Inventory `reserved_quantity` incremented when item added to cart

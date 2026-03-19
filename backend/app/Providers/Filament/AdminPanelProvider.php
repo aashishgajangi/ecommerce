@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile()
+            ->brandName('Hangout Cakes Admin')
             ->colors([
                 'primary' => Color::Amber,
             ])
