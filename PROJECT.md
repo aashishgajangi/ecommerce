@@ -22,9 +22,9 @@ Self-hosted, open source, zero subscriptions. Target: 10,000–100,000 users in 
 |---|---|---|
 | OS | Debian | 13 |
 | Reverse Proxy | Nginx | latest stable |
-| Backend | Laravel (pure REST API, no Livewire) | 12 |
+| Backend | Laravel (pure REST API, no Livewire) | 13 |
 | Language | PHP | 8.4 |
-| Admin Panel | Filament (built into Laravel) | 3 |
+| Admin Panel | Filament (built into Laravel) | 4 |
 | Frontend | Next.js + TypeScript (strict mode) | 15 |
 | Database | PostgreSQL | 17 |
 | Cache / Queue | Redis | 7 |

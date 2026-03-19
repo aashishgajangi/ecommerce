@@ -9,38 +9,38 @@
 ## Phase 0 — Infrastructure Setup
 
 ### Git & GitHub
-- [ ] Create GitHub repository (`ecommerce` — monorepo)
-- [ ] Init git in `/var/www/Ecommerce`, add remote, push initial commit (PROJECT.md + PROGRESS.md)
-- [ ] Create `.gitignore` (backend: vendor/, .env, storage/logs/; frontend: node_modules/, .next/, .env.local)
-- [ ] Set default branch to `main`
-- [ ] Generate dedicated deploy SSH keypair (`ssh-keygen -t ed25519 -C "github-deploy"`)
-- [ ] Add deploy public key to server's `~/.ssh/authorized_keys`
+- [x] Create GitHub repository (`ecommerce` — monorepo)
+- [~] Init git in `/var/www/Ecommerce`, add remote, push initial commit (PROJECT.md + PROGRESS.md) — waiting for SSH key on GitHub
+- [x] Create `.gitignore` (backend: vendor/, .env, storage/logs/; frontend: node_modules/, .next/, .env.local)
+- [x] Set default branch to `main`
+- [x] Generate dedicated deploy SSH keypair (`ssh-keygen -t ed25519 -C "github-deploy"`)
+- [ ] Add SSH public key to GitHub account (Settings → SSH keys)
 - [ ] Add GitHub Secrets: `SSH_PRIVATE_KEY`, `SERVER_IP`, `SERVER_USER`, `SERVER_PORT`
-- [ ] Create `.github/workflows/backend.yml` — PHP test + SSH deploy job
-- [ ] Create `.github/workflows/frontend.yml` — Node type-check + build + SSH deploy job
+- [x] Create `.github/workflows/backend.yml` — PHP test + SSH deploy job
+- [x] Create `.github/workflows/frontend.yml` — Node type-check + build + SSH deploy job
 - [ ] Verify CI triggers correctly on push to `main`
 
 ### Server
-- [ ] Update Debian, install essentials (curl, git, unzip, ufw)
+- [x] Update Debian, install essentials (curl, git, unzip, ufw)
 - [ ] Configure UFW firewall (allow ports 22, 80, 443 only)
 - [ ] Install Nginx and verify it serves a default page
 
 ### PHP & Laravel Runtime
-- [ ] Install PHP 8.4 + extensions (fpm, pgsql, redis, mbstring, xml, curl, zip, gd, intl)
-- [ ] Install Composer
+- [x] Install PHP 8.4 + extensions (fpm, pgsql, redis, mbstring, xml, curl, zip, gd, intl, bcmath)
+- [x] Install Composer
 
 ### Database
-- [ ] Install PostgreSQL 17
-- [ ] Create application database and user with correct privileges
-- [ ] Verify connection from command line
+- [x] Install PostgreSQL 17
+- [x] Create application database and user with correct privileges
+- [x] Verify connection from command line
 
 ### Cache & Queue
-- [ ] Install Redis 7
+- [x] Install Redis 8 (7+ compatible)
 - [ ] Configure maxmemory and eviction policy (`allkeys-lru`)
-- [ ] Verify Redis is running and accessible
+- [x] Verify Redis is running and accessible
 
 ### Node.js & Frontend Runtime
-- [ ] Install Node.js 22 LTS via nvm
+- [x] Install Node.js 24 (LTS-compatible, installed on server)
 - [ ] Install PM2 globally
 
 ### File Storage
@@ -67,12 +67,14 @@
 ## Phase 1 — Foundation + Catalog
 
 ### Backend — Project Init
-- [ ] Create Laravel 12 project in `/var/www/Ecommerce/backend/`
-- [ ] Configure `.env` (DB, Redis, MinIO/S3, APP_URL, APP_KEY, SMTP, Google OAuth keys)
-- [ ] Install Laravel Sanctum and publish config
-- [ ] Install Laravel Socialite and publish config
-- [ ] Install Filament 3 and create first admin user
-- [ ] Configure MinIO as default filesystem (`s3` disk)
+- [x] Create Laravel 13 project in `/var/www/Ecommerce/backend/`
+- [x] Configure `.env` (DB=pgsql, Redis, MinIO/S3, SMTP, Google OAuth placeholders)
+- [x] Create `.env.testing` for CI (pgsql test DB, array cache/session/mail)
+- [x] Install Laravel Sanctum 4 and publish config
+- [x] Install Laravel Socialite 5
+- [x] Install Filament 4 and run `filament:install --panels`
+- [x] Run initial migrations (users, cache, jobs, personal_access_tokens)
+- [ ] Configure MinIO as default filesystem (`s3` disk) — MinIO not yet installed
 - [ ] Set up base API route structure (`/api/v1/`)
 - [ ] Create Enums: `UserRole`, `OrderStatus`, `PaymentStatus`, `CouponType`, `RefundStatus`
 
