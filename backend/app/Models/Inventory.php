@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Inventory extends Model
 {
+    protected $table = 'inventory';
+
     protected $fillable = [
         'product_id',
         'variant_id',
