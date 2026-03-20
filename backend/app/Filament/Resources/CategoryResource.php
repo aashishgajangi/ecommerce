@@ -24,7 +24,7 @@ class CategoryResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Section::make()->schema([
+            Section::make()->schema([
                 Forms\Components\Select::make('parent_id')
                     ->label('Parent Category')
                     ->relationship('parent', 'name')

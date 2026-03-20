@@ -13,6 +13,8 @@ use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
@@ -27,9 +29,9 @@ class ProductResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Tabs::make()->tabs([
+            Tabs::make()->tabs([
 
-                Forms\Components\Tabs\Tab::make('Basic Info')->schema([
+                Tabs\Tab::make('Basic Info')->schema([
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->live(onBlur: true)
@@ -67,7 +69,7 @@ class ProductResource extends Resource
                         ->columnSpanFull(),
                 ])->columns(2),
 
-                Forms\Components\Tabs\Tab::make('Pricing & Stock')->schema([
+                Tabs\Tab::make('Pricing & Stock')->schema([
                     Forms\Components\TextInput::make('base_price')
                         ->numeric()
                         ->prefix('₹')
@@ -97,7 +99,7 @@ class ProductResource extends Resource
                         ->content('Manage stock per variant in the Variants tab.'),
                 ])->columns(2),
 
-                Forms\Components\Tabs\Tab::make('Images')->schema([
+                Tabs\Tab::make('Images')->schema([
                     Forms\Components\Repeater::make('images')
                         ->relationship()
                         ->schema([
@@ -120,12 +122,12 @@ class ProductResource extends Resource
                         ])->columns(2),
                 ]),
 
-                Forms\Components\Tabs\Tab::make('SEO')->schema([
+                Tabs\Tab::make('SEO')->schema([
                     Forms\Components\TextInput::make('meta_title')->maxLength(255)->columnSpanFull(),
                     Forms\Components\Textarea::make('meta_description')->rows(3)->columnSpanFull(),
                 ]),
 
-                Forms\Components\Tabs\Tab::make('Status')->schema([
+                Tabs\Tab::make('Status')->schema([
                     Forms\Components\Toggle::make('is_active')->default(true),
                     Forms\Components\Toggle::make('is_featured')->default(false),
                 ])->columns(2),

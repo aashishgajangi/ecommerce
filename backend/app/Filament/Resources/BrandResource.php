@@ -24,7 +24,7 @@ class BrandResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Section::make()->schema([
+            Section::make()->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->live(onBlur: true)

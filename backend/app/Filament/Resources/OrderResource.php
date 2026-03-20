@@ -23,7 +23,7 @@ class OrderResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Forms\Components\Section::make('Order Info')->schema([
+            Section::make('Order Info')->schema([
                 Forms\Components\TextInput::make('order_number')->disabled(),
                 Forms\Components\Select::make('status')
                     ->options(OrderStatus::class)
@@ -31,12 +31,12 @@ class OrderResource extends Resource
                 Forms\Components\Textarea::make('notes')->rows(2)->columnSpanFull(),
             ])->columns(2),
 
-            Forms\Components\Section::make('Customer')->schema([
+            Section::make('Customer')->schema([
                 Forms\Components\TextInput::make('user.name')->disabled(),
                 Forms\Components\TextInput::make('user.email')->disabled(),
             ])->columns(2),
 
-            Forms\Components\Section::make('Financials')->schema([
+            Section::make('Financials')->schema([
                 Forms\Components\TextInput::make('subtotal')->prefix('₹')->disabled(),
                 Forms\Components\TextInput::make('discount_amount')->prefix('₹')->disabled(),
                 Forms\Components\TextInput::make('tax_amount')->prefix('₹')->disabled(),
