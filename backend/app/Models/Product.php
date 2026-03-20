@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
@@ -80,9 +81,19 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function inventory(): HasOne
+    public function inventoryItems(): HasManyThrough
     {
-        return $this->hasOne(Inventory::class);
+        return $this->hasManyThrough(
+            Inventory::class,
+            ProductVariant::class,
+            'product_id',  // FK on product_variants
+            'variant_id',  // FK on inventory
+        );
+    }
+
+    public function getTotalStockAttribute(): int
+    {
+        return (int) $this->inventoryItems->sum('quantity');
     }
 
     public function scopeActive($query)

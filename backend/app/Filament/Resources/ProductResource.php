@@ -78,23 +78,23 @@ class ProductResource extends Resource
                         ->prefix('₹')
                         ->nullable(),
 
-                    Forms\Components\Section::make('Inventory')->schema([
-                        Forms\Components\TextInput::make('inventory.quantity')
-                            ->label('Stock Quantity')
-                            ->numeric()
-                            ->default(0),
+                    Forms\Components\TextInput::make('min_wholesale_qty')
+                        ->label('Min Wholesale Qty')
+                        ->numeric()
+                        ->default(1),
 
-                        Forms\Components\TextInput::make('inventory.reserved_quantity')
-                            ->label('Reserved')
-                            ->numeric()
-                            ->default(0)
-                            ->disabled(),
+                    Forms\Components\TextInput::make('sku_prefix')
+                        ->label('SKU Prefix')
+                        ->maxLength(50),
 
-                        Forms\Components\TextInput::make('inventory.low_stock_threshold')
-                            ->label('Low Stock Alert At')
-                            ->numeric()
-                            ->default(5),
-                    ])->columns(3),
+                    Forms\Components\TextInput::make('weight')
+                        ->label('Weight (kg)')
+                        ->numeric()
+                        ->default(0),
+
+                    Forms\Components\Placeholder::make('stock_note')
+                        ->label('Stock')
+                        ->content('Manage stock per variant in the Variants tab.'),
                 ])->columns(2),
 
                 Forms\Components\Tabs\Tab::make('Images')->schema([
@@ -154,9 +154,11 @@ class ProductResource extends Resource
                     ->money('INR')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('inventory.quantity')
+                Tables\Columns\TextColumn::make('total_stock')
                     ->label('Stock')
-                    ->sortable(),
+                    ->getStateUsing(fn($record) => $record->inventoryItems->sum('quantity'))
+                    ->badge()
+                    ->color(fn($state) => $state <= 5 ? 'danger' : ($state <= 20 ? 'warning' : 'success')),
 
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
                 Tables\Columns\IconColumn::make('is_featured')->boolean(),
