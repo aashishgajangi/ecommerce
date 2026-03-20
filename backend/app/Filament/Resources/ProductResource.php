@@ -103,7 +103,7 @@ class ProductResource extends Resource
                             ->image()
                             ->disk('s3')
                             ->directory('products')
-                            ->required(),
+                            ->columnSpanFull(),
 
                         Forms\Components\TextInput::make('alt_text')
                             ->label('Alt Text'),
@@ -114,7 +114,7 @@ class ProductResource extends Resource
 
                         Forms\Components\Toggle::make('is_primary')
                             ->label('Primary Image'),
-                    ])->columns(2),
+                    ])->columns(2)->defaultItems(0),
             ]),
 
             Section::make('SEO')->schema([

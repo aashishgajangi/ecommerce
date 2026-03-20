@@ -49,10 +49,12 @@ class CategoryResource extends Resource
                     ->rows(3)
                     ->columnSpanFull(),
 
-                Forms\Components\FileUpload::make('image')
+                Forms\Components\FileUpload::make('image_path')
+                    ->label('Image')
                     ->image()
                     ->disk('s3')
                     ->directory('categories')
+                    ->nullable()
                     ->columnSpanFull(),
 
                 Forms\Components\TextInput::make('sort_order')

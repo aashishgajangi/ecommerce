@@ -39,10 +39,12 @@ class BrandResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
 
-                Forms\Components\FileUpload::make('logo')
+                Forms\Components\FileUpload::make('logo_path')
+                    ->label('Logo')
                     ->image()
                     ->disk('s3')
                     ->directory('brands')
+                    ->nullable()
                     ->columnSpanFull(),
 
                 Forms\Components\Toggle::make('is_active')->default(true),
@@ -54,7 +56,7 @@ class BrandResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('logo')->disk('s3')->circular(),
+                Tables\Columns\ImageColumn::make('logo_path')->disk('s3')->circular()->label('Logo'),
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('slug'),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
