@@ -15,7 +15,6 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
@@ -30,110 +29,104 @@ class ProductResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-            Tabs::make()->tabs([
 
-                Tabs\Tab::make('Basic Info')->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->live(onBlur: true)
-                        ->afterStateUpdated(fn($state, Set $set) =>
-                            $set('slug', Str::slug($state)))
-                        ->maxLength(255)
-                        ->columnSpanFull(),
+            Section::make('Basic Info')->schema([
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn($state, Set $set) =>
+                        $set('slug', Str::slug($state)))
+                    ->maxLength(255)
+                    ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('slug')
-                        ->required()
-                        ->unique(ignoreRecord: true)
-                        ->maxLength(255)
-                        ->columnSpanFull(),
+                Forms\Components\TextInput::make('slug')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255)
+                    ->columnSpanFull(),
 
-                    Forms\Components\Textarea::make('short_description')
-                        ->rows(2)
-                        ->columnSpanFull(),
+                Forms\Components\Textarea::make('short_description')
+                    ->rows(2)
+                    ->columnSpanFull(),
 
-                    Forms\Components\RichEditor::make('description')
-                        ->columnSpanFull(),
+                Forms\Components\RichEditor::make('description')
+                    ->columnSpanFull(),
 
-                    Forms\Components\Select::make('brand_id')
-                        ->label('Brand')
-                        ->options(Brand::active()->pluck('name', 'id'))
-                        ->searchable(),
+                Forms\Components\Select::make('brand_id')
+                    ->label('Brand')
+                    ->options(Brand::active()->pluck('name', 'id'))
+                    ->searchable(),
 
-                    Forms\Components\Select::make('tax_rate_id')
-                        ->label('Tax Rate')
-                        ->options(TaxRate::active()->pluck('name', 'id'))
-                        ->searchable(),
+                Forms\Components\Select::make('tax_rate_id')
+                    ->label('Tax Rate')
+                    ->options(TaxRate::active()->pluck('name', 'id'))
+                    ->searchable(),
 
-                    Forms\Components\CheckboxList::make('categories')
-                        ->relationship('categories', 'name')
-                        ->columns(3)
-                        ->columnSpanFull(),
-                ])->columns(2),
+                Forms\Components\CheckboxList::make('categories')
+                    ->relationship('categories', 'name')
+                    ->columns(3)
+                    ->columnSpanFull(),
+            ])->columns(2),
 
-                Tabs\Tab::make('Pricing & Stock')->schema([
-                    Forms\Components\TextInput::make('base_price')
-                        ->numeric()
-                        ->prefix('₹')
-                        ->required(),
+            Section::make('Pricing & Stock')->schema([
+                Forms\Components\TextInput::make('base_price')
+                    ->numeric()
+                    ->prefix('₹')
+                    ->required(),
 
-                    Forms\Components\TextInput::make('wholesale_price')
-                        ->numeric()
-                        ->prefix('₹')
-                        ->nullable(),
+                Forms\Components\TextInput::make('wholesale_price')
+                    ->numeric()
+                    ->prefix('₹')
+                    ->nullable(),
 
-                    Forms\Components\TextInput::make('min_wholesale_qty')
-                        ->label('Min Wholesale Qty')
-                        ->numeric()
-                        ->default(1),
+                Forms\Components\TextInput::make('min_wholesale_qty')
+                    ->label('Min Wholesale Qty')
+                    ->numeric()
+                    ->default(1),
 
-                    Forms\Components\TextInput::make('sku_prefix')
-                        ->label('SKU Prefix')
-                        ->maxLength(50),
+                Forms\Components\TextInput::make('sku_prefix')
+                    ->label('SKU Prefix')
+                    ->maxLength(50),
 
-                    Forms\Components\TextInput::make('weight')
-                        ->label('Weight (kg)')
-                        ->numeric()
-                        ->default(0),
+                Forms\Components\TextInput::make('weight')
+                    ->label('Weight (kg)')
+                    ->numeric()
+                    ->default(0),
+            ])->columns(2),
 
-                    Forms\Components\Placeholder::make('stock_note')
-                        ->label('Stock')
-                        ->content('Manage stock per variant in the Variants tab.'),
-                ])->columns(2),
+            Section::make('Images')->schema([
+                Forms\Components\Repeater::make('images')
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\FileUpload::make('path')
+                            ->label('Image')
+                            ->image()
+                            ->disk('s3')
+                            ->directory('products')
+                            ->required(),
 
-                Tabs\Tab::make('Images')->schema([
-                    Forms\Components\Repeater::make('images')
-                        ->relationship()
-                        ->schema([
-                            Forms\Components\FileUpload::make('path')
-                                ->label('Image')
-                                ->image()
-                                ->disk('s3')
-                                ->directory('products')
-                                ->required(),
+                        Forms\Components\TextInput::make('alt_text')
+                            ->label('Alt Text'),
 
-                            Forms\Components\TextInput::make('alt_text')
-                                ->label('Alt Text'),
+                        Forms\Components\TextInput::make('sort_order')
+                            ->numeric()
+                            ->default(0),
 
-                            Forms\Components\TextInput::make('sort_order')
-                                ->numeric()
-                                ->default(0),
+                        Forms\Components\Toggle::make('is_primary')
+                            ->label('Primary Image'),
+                    ])->columns(2),
+            ]),
 
-                            Forms\Components\Toggle::make('is_primary')
-                                ->label('Primary Image'),
-                        ])->columns(2),
-                ]),
+            Section::make('SEO')->schema([
+                Forms\Components\TextInput::make('meta_title')->maxLength(255)->columnSpanFull(),
+                Forms\Components\Textarea::make('meta_description')->rows(3)->columnSpanFull(),
+            ])->columns(1)->collapsed(),
 
-                Tabs\Tab::make('SEO')->schema([
-                    Forms\Components\TextInput::make('meta_title')->maxLength(255)->columnSpanFull(),
-                    Forms\Components\Textarea::make('meta_description')->rows(3)->columnSpanFull(),
-                ]),
+            Section::make('Status')->schema([
+                Forms\Components\Toggle::make('is_active')->default(true),
+                Forms\Components\Toggle::make('is_featured')->default(false),
+            ])->columns(2),
 
-                Tabs\Tab::make('Status')->schema([
-                    Forms\Components\Toggle::make('is_active')->default(true),
-                    Forms\Components\Toggle::make('is_featured')->default(false),
-                ])->columns(2),
-
-            ])->columnSpanFull(),
         ]);
     }
 
