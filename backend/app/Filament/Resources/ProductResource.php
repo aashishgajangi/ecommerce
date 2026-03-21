@@ -152,7 +152,10 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('total_stock')
                     ->label('Stock')
-                    ->getStateUsing(fn($record) => $record->inventoryItems->sum('quantity'))
+                    ->getStateUsing(fn($record) => \DB::table('inventory')
+                        ->join('product_variants', 'product_variants.id', '=', 'inventory.variant_id')
+                        ->where('product_variants.product_id', $record->id)
+                        ->sum('inventory.quantity'))
                     ->badge()
                     ->color(fn($state) => $state <= 5 ? 'danger' : ($state <= 20 ? 'warning' : 'success')),
 

@@ -11,7 +11,6 @@ class Inventory extends Model
     protected $table = 'inventory';
 
     protected $fillable = [
-        'product_id',
         'variant_id',
         'quantity',
         'reserved_quantity',
