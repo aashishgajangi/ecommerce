@@ -1,7 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  output: 'standalone',
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'minio.hangoutcakes.com' },
+      { protocol: 'http', hostname: '127.0.0.1', port: '9000' },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
