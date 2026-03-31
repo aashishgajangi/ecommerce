@@ -5,13 +5,17 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { authApi } from '../../../../lib/api/auth'
 import { useAuthStore } from '../../../../lib/stores/authStore'
+import { useCartStore } from '../../../../lib/stores/cartStore'
+import { cartApi } from '../../../../lib/api/cart'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { setAuth } = useAuthStore()
+  const { guestItems, clearGuestCart, setCart } = useCartStore()
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [registered, setRegistered] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -24,7 +28,19 @@ export default function RegisterPage() {
     try {
       const res = await authApi.register(form)
       setAuth(res.data.user, res.data.token)
-      router.push('/')
+      // Merge guest cart silently
+      if (guestItems.length > 0) {
+        try {
+          for (const item of guestItems) {
+            await cartApi.addItem({ product_id: item.product_id, variant_id: item.variant_id ?? undefined, quantity: item.quantity })
+          }
+          const cartRes = await cartApi.get()
+          setCart(cartRes.data)
+          clearGuestCart()
+        } catch { /* silently ignore */ }
+      }
+      setRegistered(true)
+      setTimeout(() => router.push('/'), 4000)
     } catch (err: unknown) {
       const data = (err as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } })?.response?.data
       const msg = data?.message ?? Object.values(data?.errors ?? {})[0]?.[0]
@@ -40,13 +56,21 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Create account</h1>
         <p className="text-sm text-gray-500 mb-6">Join Hangout Cakes for a sweeter experience</p>
 
+        {registered && (
+          <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-4 text-sm mb-4 text-center">
+            <p className="font-semibold mb-1">Account created!</p>
+            <p>We sent a verification email to <strong>{form.email}</strong>.</p>
+            <p className="mt-1 text-xs text-green-600">Check your inbox (and spam) to verify your account.</p>
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm mb-4">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {!registered && <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
             <input
@@ -99,7 +123,7 @@ export default function RegisterPage() {
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
-        </form>
+        </form>}
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{' '}

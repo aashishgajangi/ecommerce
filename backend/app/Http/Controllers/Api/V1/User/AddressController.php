@@ -18,16 +18,17 @@ class AddressController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'label' => ['nullable', 'string', 'max:50'],
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'label'         => ['nullable', 'string', 'max:50'],
+            'name'          => ['required', 'string', 'max:255'],
+            'phone'         => ['required', 'string', 'max:20'],
             'address_line1' => ['required', 'string', 'max:255'],
             'address_line2' => ['nullable', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
-            'pincode' => ['required', 'string', 'max:10'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'is_default' => ['boolean'],
+            'city'          => ['nullable', 'string', 'max:100'],
+            'state'         => ['nullable', 'string', 'max:100'],
+            'pincode'       => ['nullable', 'string', 'max:10'],
+            'country'       => ['nullable', 'string', 'max:100'],
+            'type'          => ['nullable', 'string', 'in:Home,Work,Other'],
+            'is_default'    => ['boolean'],
         ]);
 
         if ($data['is_default'] ?? false) {

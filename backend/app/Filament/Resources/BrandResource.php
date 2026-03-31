@@ -43,7 +43,6 @@ class BrandResource extends Resource
                     ->label('Logo')
                     ->image()
                     ->disk('s3')
-                    ->directory('brands')
                     ->nullable()
                     ->columnSpanFull(),
 

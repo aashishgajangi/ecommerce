@@ -6,7 +6,7 @@ export const ordersApi = {
     api.get<PaginatedResponse<Order>>('/orders', { params: { page } }),
 
   get: (id: number) =>
-    api.get<{ data: Order }>(`/orders/${id}`),
+    api.get<Order>(`/orders/${id}`),
 
   cancel: (id: number) =>
     api.post(`/orders/${id}/cancel`),

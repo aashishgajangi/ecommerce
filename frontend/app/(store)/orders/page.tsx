@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Package } from 'lucide-react'
 import { ordersApi } from '../../../lib/api/orders'
 import { useAuthStore } from '../../../lib/stores/authStore'
+import { useOrdersStore } from '../../../lib/stores/ordersStore'
 import type { Order } from '../../../lib/types'
 
 const statusColors: Record<string, string> = {
@@ -17,16 +18,29 @@ const statusColors: Record<string, string> = {
 
 export default function OrdersPage() {
   const { isAuthenticated } = useAuthStore()
+  const { setOrders: storeOrders } = useOrdersStore()
+  const [mounted, setMounted] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
 
   useEffect(() => {
-    if (!isAuthenticated()) { setLoading(false); return }
+    if (!isAuthenticated()) { setMounted(true); setLoading(false); return }
+    const cached = useOrdersStore.getState().orders
+    // Batch: mounted + cache in one render
+    setMounted(true)
+    if (cached.length > 0) { setOrders(cached); setLoading(false) }
     ordersApi.list()
-      .then((r) => setOrders(r.data.data))
-      .catch(() => {})
+      .then((r) => {
+        const data = (r.data as unknown as { data: Order[] }).data ?? []
+        storeOrders(data)
+        setOrders(data)
+      })
+      .catch(() => setFetchError('Failed to load orders. Please refresh the page.'))
       .finally(() => setLoading(false))
   }, [])
+
+  if (!mounted) return null
 
   if (!isAuthenticated()) return (
     <div className="max-w-3xl mx-auto px-4 py-16 text-center">
@@ -35,11 +49,37 @@ export default function OrdersPage() {
     </div>
   )
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-16 text-center text-gray-400">Loading orders...</div>
+  if (loading) return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-36 mb-6" />
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white border border-gray-100 rounded-xl p-5">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-24" />
+                <div className="h-3 bg-gray-200 rounded w-20" />
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <div className="h-6 bg-gray-200 rounded-full w-20" />
+                <div className="h-4 bg-gray-200 rounded w-16" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
+
+      {fetchError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 text-center">
+          {fetchError}
+        </div>
+      )}
 
       {orders.length === 0 ? (
         <div className="text-center py-16 text-gray-400">

@@ -10,7 +10,6 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -20,20 +19,23 @@ class AuthController extends ApiController
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'role' => UserRole::Customer,
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'phone'     => $request->phone,
+            'role'      => UserRole::Customer,
             'is_active' => true,
         ]);
+
+        $user->sendEmailVerificationNotification();
 
         $token = $user->createToken($request->device_name ?? 'web')->plainTextToken;
 
         return $this->created([
-            'user' => new UserResource($user),
-            'token' => $token,
-        ], 'Registration successful');
+            'user'              => new UserResource($user),
+            'token'             => $token,
+            'verification_sent' => true,
+        ], 'Registration successful. Please check your email to verify your account.');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -53,7 +55,7 @@ class AuthController extends ApiController
         $token = $user->createToken($request->device_name ?? 'web')->plainTextToken;
 
         return $this->success([
-            'user' => new UserResource($user),
+            'user'  => new UserResource($user),
             'token' => $token,
         ], 'Login successful');
     }
@@ -80,14 +82,14 @@ class AuthController extends ApiController
             return $this->error(__($status), 422);
         }
 
-        return $this->success(null, __($status));
+        return $this->success(null, 'Password reset link sent to your email.');
     }
 
     public function resetPassword(Request $request): JsonResponse
     {
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'token'    => ['required'],
+            'email'    => ['required', 'email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -103,6 +105,41 @@ class AuthController extends ApiController
             return $this->error(__($status), 422);
         }
 
-        return $this->success(null, 'Password reset successfully');
+        return $this->success(null, 'Password reset successfully. Please log in.');
+    }
+
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'id'   => ['required', 'integer'],
+            'hash' => ['required', 'string'],
+        ]);
+
+        $user = User::findOrFail($request->id);
+
+        if (! hash_equals(sha1($user->getEmailForVerification()), (string) $request->hash)) {
+            return $this->error('Invalid verification link.', 422);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success(null, 'Email already verified.');
+        }
+
+        $user->markEmailAsVerified();
+
+        return $this->success(null, 'Email verified successfully!');
+    }
+
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->success(null, 'Email already verified.');
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return $this->success(null, 'Verification email resent.');
     }
 }

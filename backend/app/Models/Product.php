@@ -27,6 +27,7 @@ class Product extends Model
         'is_featured',
         'meta_title',
         'meta_description',
+        'meta_source',
     ];
 
     protected function casts(): array

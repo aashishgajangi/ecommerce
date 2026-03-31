@@ -6,7 +6,6 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -19,12 +18,14 @@ class SocialAuthController extends ApiController
             ->redirect();
     }
 
-    public function callback(): JsonResponse
+    public function callback(): RedirectResponse
     {
+        $frontendUrl = env('FRONTEND_URL', 'https://order.hangoutcakes.com');
+
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
-            return $this->error('Google authentication failed.', 422);
+            return redirect($frontendUrl . '/auth/login?error=google_failed');
         }
 
         $user = User::firstOrCreate(
@@ -39,7 +40,6 @@ class SocialAuthController extends ApiController
             ]
         );
 
-        // Update google_id if user registered with email/password before
         if (! $user->google_id) {
             $user->update([
                 'google_id' => $googleUser->getId(),
@@ -48,14 +48,16 @@ class SocialAuthController extends ApiController
         }
 
         if (! $user->is_active) {
-            return $this->error('Your account has been deactivated.', 403);
+            return redirect($frontendUrl . '/auth/login?error=deactivated');
         }
 
         $token = $user->createToken('google-oauth')->plainTextToken;
 
-        return $this->success([
-            'user' => new UserResource($user),
+        $params = http_build_query([
             'token' => $token,
-        ], 'Google login successful');
+            'user'  => json_encode((new UserResource($user))->resolve()),
+        ]);
+
+        return redirect($frontendUrl . '/auth/callback?' . $params);
     }
 }

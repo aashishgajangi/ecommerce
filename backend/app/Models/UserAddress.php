@@ -19,6 +19,7 @@ class UserAddress extends Model
         'pincode',
         'country',
         'is_default',
+        'type',
     ];
 
     protected function casts(): array

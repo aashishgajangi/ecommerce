@@ -24,13 +24,13 @@ class HomeController extends ApiController
 
         $featuredProducts = Product::active()
             ->featured()
-            ->with(['primaryImage', 'brand', 'inventory'])
+            ->with(['primaryImage', 'brand'])
             ->latest()
             ->limit(12)
             ->get();
 
         $newArrivals = Product::active()
-            ->with(['primaryImage', 'brand', 'inventory'])
+            ->with(['primaryImage', 'brand'])
             ->latest()
             ->limit(8)
             ->get();

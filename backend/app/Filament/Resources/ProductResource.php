@@ -102,7 +102,7 @@ class ProductResource extends Resource
                             ->label('Image')
                             ->image()
                             ->disk('s3')
-                            ->directory('products')
+                            ->visibility('public')
                             ->columnSpanFull(),
 
                         Forms\Components\TextInput::make('alt_text')
@@ -114,7 +114,17 @@ class ProductResource extends Resource
 
                         Forms\Components\Toggle::make('is_primary')
                             ->label('Primary Image'),
-                    ])->columns(2)->defaultItems(0),
+                    ])->columns(2)->defaultItems(0)
+                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data): ?array {
+                        if (empty($data['path'])) return null;
+                        if (is_array($data['path'])) $data['path'] = array_values($data['path'])[0] ?? null;
+                        return empty($data['path']) ? null : $data;
+                    })
+                    ->mutateRelationshipDataBeforeSaveUsing(function (array $data): ?array {
+                        if (empty($data['path'])) return null;
+                        if (is_array($data['path'])) $data['path'] = array_values($data['path'])[0] ?? null;
+                        return empty($data['path']) ? null : $data;
+                    }),
             ]),
 
             Section::make('SEO')->schema([
@@ -137,6 +147,7 @@ class ProductResource extends Resource
                 Tables\Columns\ImageColumn::make('primaryImage.path')
                     ->label('Image')
                     ->disk('s3')
+                    ->visibility('public')
                     ->square(),
 
                 Tables\Columns\TextColumn::make('name')

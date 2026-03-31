@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\User\NotificationController;
 use App\Http\Controllers\Api\V1\Review\ReviewController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('v1.')->group(function () {
 
+    // ── Public: Site settings ───────────────────────────────────────────
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+
     // ── Public: Home composite ──────────────────────────────────────────
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
@@ -36,6 +40,8 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('login');
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
         Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
+        Route::post('/email/verify', [AuthController::class, 'verifyEmail'])->name('email.verify');
+        Route::post('/email/resend', [AuthController::class, 'resendVerification'])->middleware('auth:sanctum')->name('email.resend');
 
         // Google OAuth
         Route::get('/google', [SocialAuthController::class, 'redirect'])->name('google');

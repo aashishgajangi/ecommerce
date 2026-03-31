@@ -18,7 +18,7 @@ class ProductResource extends JsonResource
             'brand' => new BrandResource($this->whenLoaded('brand')),
             'primary_image' => new ProductImageResource($this->whenLoaded('primaryImage')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
-            'in_stock' => $this->whenLoaded('inventory', fn() => $this->inventory?->isInStock()),
+            'in_stock' => true,
             'is_featured' => $this->is_featured,
             'created_at' => $this->created_at->toISOString(),
         ];

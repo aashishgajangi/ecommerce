@@ -12,7 +12,7 @@ class ProductVariantResource extends JsonResource
         return [
             'id' => $this->id,
             'sku' => $this->sku,
-            'price_modifier' => (float) $this->price_modifier,
+            'price' => (float) $this->price,
             'is_default' => $this->is_default,
             'is_active' => $this->is_active,
             'attribute_values' => $this->whenLoaded('attributeValues', fn() =>

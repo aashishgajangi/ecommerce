@@ -14,7 +14,7 @@ class ProductController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $query = Product::active()
-            ->with(['primaryImage', 'brand', 'inventory', 'categories'])
+            ->with(['primaryImage', 'brand', 'categories'])
             ->when($request->category, fn($q) => $q->whereHas('categories', fn($c) => $c->where('slug', $request->category)))
             ->when($request->brand, fn($q) => $q->whereHas('brand', fn($b) => $b->where('slug', $request->brand)))
             ->when($request->featured, fn($q) => $q->featured())
@@ -46,7 +46,6 @@ class ProductController extends ApiController
                 'taxRate',
                 'variants.attributeValues.attribute',
                 'variants.inventory',
-                'inventory',
                 'reviews' => fn($q) => $q->approved()->latest()->limit(10),
             ])
             ->firstOrFail();

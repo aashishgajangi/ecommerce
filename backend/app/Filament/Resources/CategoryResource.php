@@ -53,7 +53,6 @@ class CategoryResource extends Resource
                     ->label('Image')
                     ->image()
                     ->disk('s3')
-                    ->directory('categories')
                     ->nullable()
                     ->columnSpanFull(),
 

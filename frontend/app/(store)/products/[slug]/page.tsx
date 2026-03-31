@@ -2,6 +2,19 @@ import { catalogApi } from '../../../../lib/api/catalog'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import ProductActions from '../../../../components/product/ProductActions'
+
+// Pre-build every active product page at deploy time; re-generate in background every 5 min
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  try {
+    const res = await catalogApi.getProducts({ per_page: 200 })
+    return (res.data.data ?? []).map((p: { slug: string }) => ({ slug: p.slug }))
+  } catch {
+    return []
+  }
+}
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -9,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   try {
     const res = await catalogApi.getProduct(slug)
-    const p = res.data.data
+    const p = res.data
     return { title: p.meta_title ?? p.name, description: p.meta_description ?? p.short_description }
   } catch {
     return { title: 'Product Not Found' }
@@ -22,7 +35,7 @@ export default async function ProductPage({ params }: Props) {
   let product
   try {
     const res = await catalogApi.getProduct(slug)
-    product = res.data.data
+    product = res.data
   } catch {
     notFound()
   }
@@ -68,43 +81,23 @@ export default async function ProductPage({ params }: Props) {
           )}
           <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
 
-          {/* Price */}
-          <div className="mb-4">
-            <span className="text-3xl font-extrabold text-rose-600">
-              ₹{product.base_price.toLocaleString('en-IN')}
-            </span>
-            <span className="text-gray-400 text-sm ml-2">onwards · incl. GST</span>
-          </div>
-
           {product.short_description && (
             <p className="text-gray-600 mb-6 leading-relaxed">{product.short_description}</p>
           )}
 
-          {/* Variants */}
-          {variants.length > 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-gray-700 mb-2">Available Options</p>
-              <div className="flex flex-wrap gap-2">
-                {variants.map((v) => (
-                  <div key={v.id} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700">
-                    <span className="font-medium text-gray-900">{v.sku.split('-').slice(-1)[0]}</span>
-                    <span className="mx-2 text-gray-300">·</span>
-                    <span className="text-rose-600 font-semibold">₹{v.price.toLocaleString('en-IN')}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Add to cart placeholder */}
-          <button className="w-full bg-rose-600 text-white font-semibold py-4 rounded-full hover:bg-rose-700 transition-colors text-base shadow-lg">
-            Add to Cart
-          </button>
+          <ProductActions
+            productId={product.id}
+            productName={product.name}
+            productSlug={product.slug}
+            productImage={product.images?.[0] ?? null}
+            basePrice={product.base_price}
+            variants={variants}
+          />
 
           {product.description && (
             <div className="mt-8 pt-6 border-t border-gray-100">
               <h2 className="text-base font-semibold text-gray-900 mb-3">Description</h2>
-              <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">{product.description}</p>
+              <div className="text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
             </div>
           )}
         </div>

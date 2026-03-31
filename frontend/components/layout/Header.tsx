@@ -1,23 +1,44 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ShoppingCart, User, Menu, X, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '../../lib/stores/authStore'
 import { useCartStore } from '../../lib/stores/cartStore'
+import { useOrdersStore } from '../../lib/stores/ordersStore'
 
-export default function Header() {
+interface HeaderProps {
+  logoUrl?: string | null
+  siteName?: string
+}
+
+export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, clearAuth } = useAuthStore()
-  const { itemCount } = useCartStore()
+  const { itemCount, guestItemCount, clearCart } = useCartStore()
+  const { clearOrders } = useOrdersStore()
+  // Authenticated → server cart count only. Guest → guest cart count only. Never add both.
+  const totalCartCount = user ? itemCount : guestItemCount
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-rose-600 tracking-tight">
-            Hangout Cakes
+          <Link href="/" className="flex items-center">
+            {logoUrl ? (
+              <Image
+                src={logoUrl}
+                alt={siteName}
+                width={140}
+                height={40}
+                className="h-9 w-auto object-contain"
+                priority
+              />
+            ) : (
+              <span className="text-xl font-bold text-rose-600 tracking-tight">{siteName}</span>
+            )}
           </Link>
 
           {/* Desktop nav */}
@@ -35,9 +56,9 @@ export default function Header() {
 
             <Link href="/cart" className="relative flex items-center text-gray-700 hover:text-rose-600 transition-colors">
               <ShoppingCart size={20} />
-              {itemCount > 0 && (
+              {totalCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-rose-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                  {itemCount > 99 ? '99+' : itemCount}
+                  {totalCartCount > 99 ? '99+' : totalCartCount}
                 </span>
               )}
             </Link>
@@ -52,7 +73,7 @@ export default function Header() {
                   <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Account</Link>
                   <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
                   <button
-                    onClick={clearAuth}
+                    onClick={() => { clearAuth(); clearCart(); clearOrders() }}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
                   >
                     Sign Out
@@ -87,7 +108,7 @@ export default function Header() {
             <>
               <Link href="/account" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Account</Link>
               <Link href="/orders" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Orders</Link>
-              <button onClick={() => { clearAuth(); setMenuOpen(false) }} className="block py-1 text-red-600">Sign Out</button>
+              <button onClick={() => { clearAuth(); clearCart(); clearOrders(); setMenuOpen(false) }} className="block py-1 text-red-600">Sign Out</button>
             </>
           ) : (
             <Link href="/auth/login" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>Login / Register</Link>

@@ -2,13 +2,13 @@ import api from './client'
 import type { Category, Product, Brand, PaginatedResponse } from '../types'
 
 export const catalogApi = {
-  getHome: () => api.get<{ data: { featured: Product[]; categories: Category[]; banners: unknown[] } }>('/home'),
+  getHome: () => api.get<{ featured: Product[]; categories: Category[]; banners: unknown[] }>('/home'),
 
-  getCategories: () => api.get<{ data: Category[] }>('/categories'),
+  getCategories: () => api.get<Category[]>('/categories'),
 
-  getCategory: (slug: string) => api.get<{ data: Category }>(`/categories/${slug}`),
+  getCategory: (slug: string) => api.get<Category>(`/categories/${slug}`),
 
-  getBrands: () => api.get<{ data: Brand[] }>('/brands'),
+  getBrands: () => api.get<Brand[]>('/brands'),
 
   getProducts: (params?: {
     category?: string
@@ -20,5 +20,5 @@ export const catalogApi = {
     featured?: boolean
   }) => api.get<PaginatedResponse<Product>>('/products', { params }),
 
-  getProduct: (slug: string) => api.get<{ data: Product }>(`/products/${slug}`),
+  getProduct: (slug: string) => api.get<Product>(`/products/${slug}`),
 }

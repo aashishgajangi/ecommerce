@@ -32,7 +32,7 @@ class ProductDetailResource extends JsonResource
                 'name' => $this->taxRate->name,
             ]),
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
-            'in_stock' => $this->whenLoaded('inventory', fn() => $this->inventory?->isInStock()),
+            'in_stock' => true,
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,

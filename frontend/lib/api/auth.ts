@@ -10,13 +10,19 @@ export const authApi = {
 
   logout: () => api.post('/auth/logout'),
 
-  me: () => api.get<{ data: User }>('/auth/me'),
+  me: () => api.get<User>('/auth/me'),
 
   forgotPassword: (email: string) =>
     api.post('/auth/forgot-password', { email }),
 
   resetPassword: (data: { token: string; email: string; password: string; password_confirmation: string }) =>
     api.post('/auth/reset-password', data),
+
+  verifyEmail: (id: number, hash: string) =>
+    api.post('/auth/email/verify', { id, hash }),
+
+  resendVerification: () =>
+    api.post('/auth/email/resend'),
 
   googleRedirectUrl: () =>
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/google`,

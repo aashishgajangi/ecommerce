@@ -3,6 +3,8 @@ import { catalogApi } from '../../lib/api/catalog'
 import ProductCard from '../../components/product/ProductCard'
 import type { Product, Category } from '../../lib/types'
 
+export const revalidate = 60
+
 async function getHomeData() {
   try {
     const [productsRes, categoriesRes] = await Promise.all([
@@ -11,7 +13,7 @@ async function getHomeData() {
     ])
     return {
       featured: productsRes.data.data ?? [],
-      categories: categoriesRes.data.data ?? [],
+      categories: categoriesRes.data ?? [],
     }
   } catch {
     return { featured: [], categories: [] }

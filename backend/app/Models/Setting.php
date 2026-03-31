@@ -4,38 +4,52 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class Setting extends Model
 {
-    public $timestamps = false;
+    protected $fillable = ['group', 'key', 'value'];
 
-    protected $fillable = [
-        'key',
-        'value',
-        'type',
-    ];
+    protected $casts = ['value' => 'json'];
 
-    public static function get(string $key, mixed $default = null): mixed
+    // ── Static helpers ────────────────────────────────────────────────────────
+
+    public static function get(string $key, mixed $default = null, string $group = 'general'): mixed
     {
-        return Cache::rememberForever("setting:{$key}", function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
-            return $setting ? $setting->getCastedValue() : $default;
+        return Cache::rememberForever("setting:{$group}:{$key}", function () use ($key, $group, $default) {
+            $row = static::where('group', $group)->where('key', $key)->first();
+            return $row ? $row->value : $default;
         });
     }
 
-    public static function set(string $key, mixed $value): void
+    public static function set(string $key, mixed $value, string $group = 'general'): void
     {
-        static::updateOrCreate(['key' => $key], ['value' => $value]);
-        Cache::forget("setting:{$key}");
+        static::updateOrCreate(
+            ['group' => $group, 'key' => $key],
+            ['value' => $value]
+        );
+        Cache::forget("setting:{$group}:{$key}");
     }
 
-    public function getCastedValue(): mixed
+    /** Return all keys in a group as a flat associative array. */
+    public static function allInGroup(string $group = 'general'): array
     {
-        return match($this->type) {
-            'boolean' => (bool) $this->value,
-            'integer' => (int) $this->value,
-            'json' => json_decode($this->value, true),
-            default => $this->value,
-        };
+        return static::where('group', $group)
+            ->pluck('value', 'key')
+            ->toArray();
+    }
+
+    // ── URL helpers ───────────────────────────────────────────────────────────
+
+    public static function logoUrl(): ?string
+    {
+        $path = static::get('logo_path');
+        return $path ? Storage::disk('s3')->url($path) : null;
+    }
+
+    public static function faviconUrl(): ?string
+    {
+        $path = static::get('favicon_path');
+        return $path ? Storage::disk('s3')->url($path) : null;
     }
 }

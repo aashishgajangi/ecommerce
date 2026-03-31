@@ -12,16 +12,18 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'sku',
-        'price_modifier',
-        'is_default',
+        'price',
+        'wholesale_price',
+        'weight',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'price_modifier' => 'decimal:2',
-            'is_default' => 'boolean',
+            'price' => 'decimal:2',
+            'wholesale_price' => 'decimal:2',
+            'weight' => 'decimal:3',
             'is_active' => 'boolean',
         ];
     }
@@ -33,17 +35,21 @@ class ProductVariant extends Model
 
     public function attributeValues(): BelongsToMany
     {
-        return $this->belongsToMany(AttributeValue::class, 'variant_attribute_values');
+        return $this->belongsToMany(
+            AttributeValue::class,
+            'variant_attribute_values',
+            'variant_id',
+            'attribute_value_id'
+        );
     }
 
     public function inventory(): HasOne
     {
-        return $this->hasOne(Inventory::class);
+        return $this->hasOne(Inventory::class, 'variant_id');
     }
 
-    public function getPrice(bool $isWholesale = false): float
+    public function getLabelAttribute(): string
     {
-        $base = $this->product->getEffectivePrice($isWholesale);
-        return $base + (float) $this->price_modifier;
+        return $this->attributeValues->pluck('value')->join(' / ') ?: $this->sku;
     }
 }

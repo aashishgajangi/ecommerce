@@ -46,4 +46,16 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ProductVariant::class);
     }
+
+    protected $appends = ['subtotal', 'variant_sku'];
+
+    public function getSubtotalAttribute(): float
+    {
+        return (float) $this->total;
+    }
+
+    public function getVariantSkuAttribute(): ?string
+    {
+        return $this->variant_label;
+    }
 }

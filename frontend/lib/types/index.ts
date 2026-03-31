@@ -105,6 +105,15 @@ export interface OrderItem {
   subtotal: number
 }
 
+export interface OrderPayment {
+  method: string
+  status: string
+  gateway?: string
+  gateway_order_id?: string
+  amount: number
+  currency: string
+}
+
 export interface Order {
   id: number
   order_number: string
@@ -118,6 +127,7 @@ export interface Order {
   payment_status?: string
   placed_at: string
   items?: OrderItem[]
+  payment?: OrderPayment
 }
 
 // ── API Pagination ─────────────────────────────────────────────────────────

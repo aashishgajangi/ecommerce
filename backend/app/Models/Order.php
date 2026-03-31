@@ -26,6 +26,8 @@ class Order extends Model
         'notes',
     ];
 
+    protected $appends = ['placed_at'];
+
     protected function casts(): array
     {
         return [
@@ -38,6 +40,11 @@ class Order extends Model
             'shipping_address' => 'array',
             'billing_address' => 'array',
         ];
+    }
+
+    public function getPlacedAtAttribute(): string
+    {
+        return $this->created_at->toISOString();
     }
 
     public function user(): BelongsTo
