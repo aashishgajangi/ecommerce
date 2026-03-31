@@ -213,6 +213,7 @@ export default function CheckoutPage() {
           },
           payment_method: method,
           branch_id: selectedBranch.branch_id,
+          delivery_fee: deliveryFee,
         }),
       })
       const data = await res.json()
@@ -604,7 +605,8 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-100 pt-3 space-y-1.5">
                 {cart.discount_amount > 0 && (
                   <div className="flex justify-between text-xs text-green-600">
-                    <span>Discount</span><span>−₹{cart.discount_amount.toLocaleString('en-IN')}</span>
+                    <span>Discount{cart.coupon_code ? ` (${cart.coupon_code})` : ''}</span>
+                    <span>−₹{cart.discount_amount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xs text-gray-500">

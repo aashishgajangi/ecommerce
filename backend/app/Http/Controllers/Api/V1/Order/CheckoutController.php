@@ -6,6 +6,7 @@ use App\Enums\CouponType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Api\V1\ApiController;
+use App\Jobs\SendOrderConfirmationEmail;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -33,16 +34,18 @@ class CheckoutController extends ApiController
     public function place(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'shipping_address' => 'required|array',
-            'shipping_address.name' => 'required|string|max:255',
-            'shipping_address.phone' => 'required|string|max:20',
-            'shipping_address.line1' => 'required|string|max:255',
-            'shipping_address.city' => 'required|string|max:100',
-            'shipping_address.state' => 'required|string|max:100',
-            'shipping_address.pincode' => 'required|string|max:20',
-            'billing_address' => 'nullable|array',
-            'payment_method' => 'required|in:cod,razorpay',
-            'notes' => 'nullable|string|max:500',
+            'shipping_address'          => 'required|array',
+            'shipping_address.name'     => 'required|string|max:255',
+            'shipping_address.phone'    => 'required|string|max:20',
+            'shipping_address.line1'    => 'required|string|max:255',
+            'shipping_address.city'     => 'required|string|max:100',
+            'shipping_address.state'    => 'required|string|max:100',
+            'shipping_address.pincode'  => 'required|string|max:20',
+            'billing_address'           => 'nullable|array',
+            'payment_method'            => 'required|in:cod,razorpay',
+            'branch_id'                 => 'nullable|integer|exists:branches,id',
+            'delivery_fee'              => 'nullable|numeric|min:0',
+            'notes'                     => 'nullable|string|max:500',
         ]);
 
         $user = $request->user();
@@ -56,37 +59,31 @@ class CheckoutController extends ApiController
         }
 
         // Calculate totals
-        $subtotal = $cart->items->sum(fn ($i) => (float) $i->unit_price * $i->quantity);
+        $subtotal       = $cart->items->sum(fn ($i) => (float) $i->unit_price * $i->quantity);
+        $deliveryFee    = (float) ($validated['delivery_fee'] ?? 0);
         $discountAmount = 0.0;
 
         if ($cart->coupon) {
-            $coupon = $cart->coupon;
-            if ($coupon->type === CouponType::Percentage) {
-                $discountAmount = round($subtotal * ($coupon->value / 100), 2);
-                if ($coupon->max_discount_amount && $discountAmount > $coupon->max_discount_amount) {
-                    $discountAmount = (float) $coupon->max_discount_amount;
-                }
-            } else {
-                $discountAmount = min((float) $coupon->value, $subtotal);
-            }
+            $discountAmount = $cart->coupon->calculateDiscount($subtotal);
         }
 
         $taxableAmount = $subtotal - $discountAmount;
-        $taxRate = 18.0;
-        $taxAmount = round($taxableAmount * ($taxRate / 100), 2);
-        $total = round($taxableAmount + $taxAmount, 2);
+        $taxAmount     = round($taxableAmount * 0.18, 2);
+        $total         = round($taxableAmount + $taxAmount + $deliveryFee, 2);
         $billingAddress = $validated['billing_address'] ?? $validated['shipping_address'];
 
         $order = DB::transaction(function () use (
-            $cart, $user, $validated, $subtotal, $discountAmount, $taxAmount, $total, $billingAddress
+            $cart, $user, $validated,
+            $subtotal, $discountAmount, $taxAmount, $deliveryFee, $total, $billingAddress
         ) {
             $order = Order::create([
                 'user_id'          => $user->id,
+                'branch_id'        => $validated['branch_id'] ?? null,
                 'status'           => OrderStatus::Pending,
                 'subtotal'         => $subtotal,
                 'discount_amount'  => $discountAmount,
                 'tax_amount'       => $taxAmount,
-                'shipping_amount'  => 0,
+                'shipping_amount'  => $deliveryFee,
                 'total'            => $total,
                 'currency'         => 'INR',
                 'coupon_id'        => $cart->coupon_id,
@@ -96,7 +93,6 @@ class CheckoutController extends ApiController
             ]);
 
             foreach ($cart->items as $item) {
-                $itemTotal = round((float) $item->unit_price * $item->quantity, 2);
                 OrderItem::create([
                     'order_id'        => $order->id,
                     'product_id'      => $item->product_id,
@@ -108,7 +104,7 @@ class CheckoutController extends ApiController
                     'unit_price'      => $item->unit_price,
                     'discount_amount' => 0,
                     'tax_amount'      => 0,
-                    'total'           => $itemTotal,
+                    'total'           => round((float) $item->unit_price * $item->quantity, 2),
                 ]);
             }
 
@@ -120,12 +116,12 @@ class CheckoutController extends ApiController
                 'currency' => 'INR',
             ]);
 
-            // Increment coupon usage
             if ($cart->coupon_id) {
                 $cart->coupon->increment('usage_count');
+                // Record per-user usage
+                $cart->coupon->usages()->create(['user_id' => $order->user_id, 'order_id' => $order->id]);
             }
 
-            // COD: clear cart immediately. Razorpay: cart cleared after payment verify.
             if ($validated['payment_method'] === 'cod') {
                 $cart->items()->delete();
                 $cart->update(['coupon_id' => null]);
@@ -133,6 +129,9 @@ class CheckoutController extends ApiController
 
             return $order;
         });
+
+        // Dispatch confirmation email (queued, non-blocking)
+        SendOrderConfirmationEmail::dispatch($order->id)->onQueue('emails');
 
         if ($validated['payment_method'] === 'razorpay') {
             $rzp = new RazorpayApi(
@@ -147,22 +146,21 @@ class CheckoutController extends ApiController
                 'payment_capture' => 1,
             ]);
 
-            // Store the Razorpay order ID on the payment record
             Payment::where('order_id', $order->id)->latest('id')->first()?->update([
                 'gateway'          => 'razorpay',
                 'gateway_order_id' => $rzpOrder->id,
             ]);
 
             return $this->created([
-                'id'               => $order->id,
-                'order_number'     => $order->order_number,
-                'status'           => $order->status->value,
-                'total'            => $total,
-                'payment_method'   => 'razorpay',
+                'id'                => $order->id,
+                'order_number'      => $order->order_number,
+                'status'            => $order->status->value,
+                'total'             => $total,
+                'payment_method'    => 'razorpay',
                 'razorpay_order_id' => $rzpOrder->id,
-                'amount'           => (int) round($total * 100),
-                'currency'         => 'INR',
-                'key_id'           => config('services.razorpay.key'),
+                'amount'            => (int) round($total * 100),
+                'currency'          => 'INR',
+                'key_id'            => config('services.razorpay.key'),
             ]);
         }
 
