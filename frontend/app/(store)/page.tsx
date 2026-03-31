@@ -1,9 +1,30 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { catalogApi } from '../../lib/api/catalog'
+import { getSiteSettings } from '../../lib/api/settings'
 import ProductCard from '../../components/product/ProductCard'
 import type { Product, Category } from '../../lib/types'
 
 export const revalidate = 60
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://order.hangoutcakes.com'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings()
+  const description = s.site_tagline ?? 'Custom cakes, cupcakes & desserts — freshly baked and delivered to your door.'
+  return {
+    title: s.site_name,
+    description,
+    alternates: { canonical: SITE_URL },
+    openGraph: {
+      title: s.site_name,
+      description,
+      url: SITE_URL,
+      type: 'website',
+      ...(s.logo_url ? { images: [{ url: s.logo_url, width: 1200, height: 630, alt: s.site_name }] } : {}),
+    },
+  }
+}
 
 async function getHomeData() {
   try {
@@ -21,11 +42,46 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { featured, categories } = await getHomeData()
+  const [{ featured, categories }, settings] = await Promise.all([
+    getHomeData(),
+    getSiteSettings(),
+  ])
   const rootCategories = (categories as Category[]).filter((c) => !c.parent_id).slice(0, 6)
+
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Bakery',
+    name: settings.site_name,
+    url: SITE_URL,
+    ...(settings.logo_url ? { image: settings.logo_url } : {}),
+    ...(settings.contact_phone ? { telephone: settings.contact_phone } : {}),
+    ...(settings.contact_email ? { email: settings.contact_email } : {}),
+    ...(settings.address ? {
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: settings.address,
+        addressCountry: 'IN',
+      },
+    } : {}),
+    priceRange: '₹₹',
+    servesCuisine: ['Cakes', 'Cupcakes', 'Desserts', 'Bakery'],
+    sameAs: [
+      settings.instagram_url,
+      settings.facebook_url,
+      settings.twitter_url,
+    ].filter(Boolean),
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Cakes & Desserts',
+    },
+  }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       {/* Hero */}
       <section className="bg-gradient-to-br from-rose-50 to-pink-100 py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">

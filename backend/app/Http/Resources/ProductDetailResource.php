@@ -34,6 +34,8 @@ class ProductDetailResource extends JsonResource
             'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
             'in_stock' => true,
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
+            'average_rating' => $this->whenLoaded('reviews', fn() => $this->reviews->avg('rating') ? round($this->reviews->avg('rating'), 1) : null),
+            'reviews_count' => $this->whenLoaded('reviews', fn() => $this->reviews->count()),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
             'is_featured' => $this->is_featured,

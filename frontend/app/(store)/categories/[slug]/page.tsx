@@ -23,11 +23,23 @@ interface Props {
   searchParams: Promise<{ page?: string; sort?: string }>
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://order.hangoutcakes.com'
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   try {
     const res = await catalogApi.getCategory(slug)
-    return { title: `${res.data.name} — Hangout Cakes` }
+    const cat = res.data
+    const title = `${cat.name} — Hangout Cakes`
+    const description = cat.description ?? `Shop ${cat.name} — handcrafted cakes and desserts from Hangout Cakes, delivered fresh to your door.`
+    const canonical = `${SITE_URL}/categories/${slug}`
+    return {
+      title,
+      description,
+      alternates: { canonical },
+      openGraph: { title, description, url: canonical, type: 'website' },
+      twitter: { card: 'summary_large_image', title, description },
+    }
   } catch { return {} }
 }
 
@@ -54,6 +66,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   const subs = (category!.children ?? []) as Category[]
   const isSubcategory = !!category!.parent_id
+  const canonical = `${SITE_URL}/categories/${slug}`
+
+  const breadcrumbItems = [
+    { '@type': 'ListItem', position: 1, name: 'Home',       item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Categories', item: `${SITE_URL}/categories` },
+    { '@type': 'ListItem', position: 3, name: category!.name, item: canonical },
+  ]
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbItems,
+  }
 
   function buildHref(p: number, s?: string) {
     const params = new URLSearchParams()
@@ -65,6 +89,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   }
 
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Breadcrumb */}
@@ -190,5 +216,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       )}
     </div>
+    </>
   )
 }

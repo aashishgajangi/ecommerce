@@ -2,7 +2,20 @@ import { catalogApi } from '../../../lib/api/catalog'
 import ProductCard from '../../../components/product/ProductCard'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Shop All Products' }
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://order.hangoutcakes.com'
+
+export const metadata: Metadata = {
+  title: 'Shop All Products',
+  description: 'Browse our full range of handcrafted cakes, cupcakes and desserts. Order online for fresh delivery from Hangout Cakes.',
+  alternates: { canonical: `${SITE_URL}/products` },
+  openGraph: {
+    title: 'Shop All Products — Hangout Cakes',
+    description: 'Browse our full range of handcrafted cakes, cupcakes and desserts.',
+    url: `${SITE_URL}/products`,
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image' },
+}
 
 interface Props {
   searchParams: Promise<{ category?: string; brand?: string; search?: string; sort?: string; page?: string; featured?: string }>
@@ -23,7 +36,21 @@ export default async function ProductsPage({ searchParams }: Props) {
   const products = res?.data?.data ?? []
   const meta = res?.data?.meta
 
+  const itemListSchema = products.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Hangout Cakes Products',
+    itemListElement: products.map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      url: `${SITE_URL}/products/${p.slug}`,
+      name: p.name,
+    })),
+  } : null
+
   return (
+    <>
+    {itemListSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />}
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
@@ -61,5 +88,6 @@ export default async function ProductsPage({ searchParams }: Props) {
         </div>
       )}
     </div>
+    </>
   )
 }

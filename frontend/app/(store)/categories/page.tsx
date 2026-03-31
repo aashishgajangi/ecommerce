@@ -5,7 +5,20 @@ import type { Metadata } from 'next'
 import type { Category } from '../../../lib/types'
 import type { LucideIcon } from 'lucide-react'
 
-export const metadata: Metadata = { title: 'Categories — Hangout Cakes' }
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://order.hangoutcakes.com'
+
+export const metadata: Metadata = {
+  title: 'Categories',
+  description: 'Explore all cake and dessert categories at Hangout Cakes — from custom cakes and cupcakes to brownies, pastries and more.',
+  alternates: { canonical: `${SITE_URL}/categories` },
+  openGraph: {
+    title: 'Categories — Hangout Cakes',
+    description: 'Explore all cake and dessert categories at Hangout Cakes.',
+    url: `${SITE_URL}/categories`,
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image' },
+}
 export const revalidate = 120
 
 const CATEGORY_STYLE: Record<string, { icon: LucideIcon; bg: string; border: string; iconColor: string; badge: string }> = {
