@@ -130,6 +130,42 @@ export interface Order {
   payment?: OrderPayment
 }
 
+// ── Branches ─────────────────────────────────────────────────────────────────
+export interface Branch {
+  id: number
+  name: string
+  slug: string
+  city: string
+  state: string
+  pincode: string
+  phone?: string
+  lat: number | null
+  lng: number | null
+  service_radius_km: number
+  delivery_base_fee: number
+  delivery_per_km_fee: number
+  free_delivery_above: number | null
+  opening_time: string
+  closing_time: string
+  days_open: string[]
+  google_maps_url?: string
+  google_place_id?: string
+}
+
+export interface NearbyBranch extends Branch {
+  address: string
+  distance_km: number
+  is_estimated: boolean   // true = Haversine fallback (Distance Matrix unavailable), false = real road km
+  within_radius: boolean  // false when outside service radius (only in show_all mode)
+  delivery_fee: number
+  eta_minutes: number | null
+}
+
+export interface DeliveryOptionsResponse {
+  location: { lat: number; lng: number }
+  branches: NearbyBranch[]
+}
+
 // ── API Pagination ─────────────────────────────────────────────────────────
 export interface PaginatedResponse<T> {
   data: T[]

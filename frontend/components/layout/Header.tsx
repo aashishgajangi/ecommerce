@@ -46,6 +46,7 @@ export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderPr
             <Link href="/products" className="hover:text-rose-600 transition-colors">Shop</Link>
             <Link href="/categories" className="hover:text-rose-600 transition-colors">Categories</Link>
             <Link href="/products?featured=true" className="hover:text-rose-600 transition-colors">Featured</Link>
+            <Link href="/stores" className="hover:text-rose-600 transition-colors">Our Stores</Link>
           </nav>
 
           {/* Actions */}
@@ -104,6 +105,7 @@ export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderPr
           <Link href="/products" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>Shop</Link>
           <Link href="/categories" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>Categories</Link>
           <Link href="/products?featured=true" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>Featured</Link>
+          <Link href="/stores" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>Our Stores</Link>
           {user ? (
             <>
               <Link href="/account" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Account</Link>

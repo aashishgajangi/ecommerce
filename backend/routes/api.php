@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\V1\Review\ReviewController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\Branch\BranchController;
+use App\Http\Controllers\Api\V1\Branch\DeliveryController;
 use App\Http\Controllers\Api\V1\UploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +49,14 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('/google', [SocialAuthController::class, 'redirect'])->name('google');
         Route::get('/google/callback', [SocialAuthController::class, 'callback'])->name('google.callback');
     });
+
+    // ── Public: Branches & Delivery ─────────────────────────────────────
+    Route::prefix('branches')->name('branches.')->group(function () {
+        Route::get('/', [BranchController::class, 'index'])->name('index');
+        Route::get('/nearby', [BranchController::class, 'nearby'])->name('nearby');
+        Route::get('/{slug}', [BranchController::class, 'show'])->name('show');
+    });
+    Route::post('/delivery/options', [DeliveryController::class, 'options'])->name('delivery.options');
 
     // ── Public: Catalog ─────────────────────────────────────────────────
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
