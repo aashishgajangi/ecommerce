@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductActions from '../../../../components/product/ProductActions'
 import ProductReviews from '../../../../components/product/ProductReviews'
+import WishlistButton from '../../../../components/product/WishlistButton'
 
 // Pre-build every active product page at deploy time; re-generate in background every 5 min
 export const revalidate = 300
@@ -146,7 +147,10 @@ export default async function ProductPage({ params }: Props) {
           {product.brand && (
             <p className="text-sm text-gray-400 mb-1">{product.brand.name}</p>
           )}
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+            <WishlistButton productId={product.id} inline />
+          </div>
 
           {product.short_description && (
             <p className="text-gray-600 mb-6 leading-relaxed">{product.short_description}</p>

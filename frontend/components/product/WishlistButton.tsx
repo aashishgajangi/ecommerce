@@ -6,10 +6,11 @@ import { wishlistApi } from '../../lib/api/wishlist'
 
 interface Props {
   productId: number
+  inline?: boolean   // true = renders as normal flow button (product detail page)
   className?: string
 }
 
-export default function WishlistButton({ productId, className = '' }: Props) {
+export default function WishlistButton({ productId, inline = false, className = '' }: Props) {
   const [wishlisted, setWishlisted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<'added' | 'removed' | 'error' | null>(null)
@@ -43,7 +44,7 @@ export default function WishlistButton({ productId, className = '' }: Props) {
   }
 
   return (
-    <div className={`absolute top-2 right-2 z-10 flex flex-col items-end gap-1 ${className}`}>
+    <div className={`${inline ? 'flex' : 'absolute top-2 right-2 z-10'} flex-col items-end gap-1 ${className}`}>
       {/* Feedback tooltip */}
       {feedback && (
         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap pointer-events-none ${

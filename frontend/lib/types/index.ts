@@ -128,6 +128,11 @@ export interface Order {
   placed_at: string
   items?: OrderItem[]
   payment?: OrderPayment
+  branch?: { id: number; name: string; address?: string; phone?: string } | null
+  shipping_address?: {
+    name?: string; phone?: string; line1?: string
+    city?: string; state?: string; pincode?: string
+  } | null
 }
 
 // ── Branches ─────────────────────────────────────────────────────────────────

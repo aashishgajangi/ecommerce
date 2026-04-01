@@ -201,6 +201,31 @@ export default function OrderDetailPage() {
           </div>
         )}
 
+        {/* Delivery info */}
+        {(order.branch || order.shipping_address) && (
+          <div className="bg-white border border-gray-100 rounded-xl p-5 mb-4 grid sm:grid-cols-2 gap-4 text-sm">
+            {order.branch && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Delivering From</p>
+                <p className="font-medium text-gray-900">{order.branch.name}</p>
+                {order.branch.address && <p className="text-gray-500 text-xs mt-0.5">{order.branch.address}</p>}
+                {order.branch.phone && <p className="text-gray-400 text-xs mt-0.5">{order.branch.phone}</p>}
+              </div>
+            )}
+            {order.shipping_address && (
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Delivery Address</p>
+                {order.shipping_address.name && <p className="font-medium text-gray-900">{order.shipping_address.name}</p>}
+                {order.shipping_address.phone && <p className="text-gray-500 text-xs mt-0.5">{order.shipping_address.phone}</p>}
+                {order.shipping_address.line1 && <p className="text-gray-500 text-xs mt-0.5">{order.shipping_address.line1}</p>}
+                {(order.shipping_address.city || order.shipping_address.pincode) && (
+                  <p className="text-gray-400 text-xs">{[order.shipping_address.city, order.shipping_address.pincode].filter(Boolean).join(' – ')}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Totals */}
         <div className="bg-white border border-gray-100 rounded-xl p-5 space-y-2 text-sm">
           <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>₹{order.subtotal.toLocaleString('en-IN')}</span></div>
