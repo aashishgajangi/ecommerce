@@ -14,7 +14,7 @@ class WishlistController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $wishlist = $request->user()->wishlist()
-            ->with(['product.primaryImage', 'product.brand', 'product.inventory'])
+            ->with(['product.primaryImage', 'product.brand'])
             ->get()
             ->pluck('product');
 

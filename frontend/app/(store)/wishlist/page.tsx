@@ -12,7 +12,7 @@ import type { Product } from '../../../lib/types'
 import { useRouter } from 'next/navigation'
 
 export default function WishlistPage() {
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const { setCart } = useCartStore()
   const router = useRouter()
 
@@ -25,8 +25,7 @@ export default function WishlistPage() {
     if (!isAuthenticated()) { router.push('/auth/login'); return }
     wishlistApi.list()
       .then((res) => {
-        const d = res.data as unknown as { data: Product[] }
-        setProducts(d.data ?? [])
+        setProducts((res.data as unknown as Product[]) ?? [])
       })
       .catch(() => {})
       .finally(() => setLoading(false))
