@@ -3,6 +3,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductActions from '../../../../components/product/ProductActions'
+import ProductReviews from '../../../../components/product/ProductReviews'
 
 // Pre-build every active product page at deploy time; re-generate in background every 5 min
 export const revalidate = 300
@@ -168,6 +169,12 @@ export default async function ProductPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      <ProductReviews
+        productId={product.id}
+        averageRating={product.average_rating}
+        reviewsCount={product.reviews_count}
+      />
     </div>
     </>
   )

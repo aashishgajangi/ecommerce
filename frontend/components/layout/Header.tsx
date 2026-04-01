@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingCart, User, Menu, X, Search } from 'lucide-react'
+import { ShoppingCart, User, Menu, X, Search, Heart } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '../../lib/stores/authStore'
 import { useCartStore } from '../../lib/stores/cartStore'
@@ -55,6 +55,12 @@ export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderPr
               <Search size={20} />
             </Link>
 
+            {user && (
+              <Link href="/wishlist" className="hidden md:flex items-center text-gray-500 hover:text-rose-600 transition-colors">
+                <Heart size={20} />
+              </Link>
+            )}
+
             <Link href="/cart" className="relative flex items-center text-gray-700 hover:text-rose-600 transition-colors">
               <ShoppingCart size={20} />
               {totalCartCount > 0 && (
@@ -73,6 +79,7 @@ export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderPr
                 <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50">
                   <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Account</Link>
                   <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
+                  <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Wishlist</Link>
                   <button
                     onClick={() => { clearAuth(); clearCart(); clearOrders() }}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
@@ -110,6 +117,7 @@ export default function Header({ logoUrl, siteName = 'Hangout Cakes' }: HeaderPr
             <>
               <Link href="/account" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Account</Link>
               <Link href="/orders" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Orders</Link>
+              <Link href="/wishlist" className="block py-1 hover:text-rose-600" onClick={() => setMenuOpen(false)}>My Wishlist</Link>
               <button onClick={() => { clearAuth(); clearCart(); clearOrders(); setMenuOpen(false) }} className="block py-1 text-red-600">Sign Out</button>
             </>
           ) : (
